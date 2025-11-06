@@ -1,5 +1,6 @@
 package com.example.springboot3.service;
 
+import com.example.springboot3.exception.ResourceNotFoundException;
 import com.example.springboot3.payload.OrdersDTO;
 import com.example.springboot3.payload.OrdersPatchDTO;
 import com.example.springboot3.entity.Orders;
@@ -28,7 +29,7 @@ public class OrdersServiceImpl implements OrderServices {
     @Override
     public Orders findAllById(Long id) {
         return ordersRepo.findById(id)
-                .orElseThrow(()->new RuntimeException("Orders with id "+id+" not found!"));
+                .orElseThrow(()->new ResourceNotFoundException("Orders with id "+id+" not found!"));
     }
 
     @Override
