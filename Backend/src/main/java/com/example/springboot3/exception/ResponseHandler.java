@@ -1,4 +1,4 @@
-package com.example.springboot3.utils;
+package com.example.springboot3.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;

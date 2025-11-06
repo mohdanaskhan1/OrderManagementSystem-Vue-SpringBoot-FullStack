@@ -1,23 +1,16 @@
-package com.example.springboot3.dto;
+package com.example.springboot3.payload;
 
+import com.example.springboot3.entity.Orders;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Data
-public class OrdersDTO {
+public class OrdersDTO{
     @Size(max = 100, message = "Customer name must be less than 100 characters")
     @NotBlank(message = "Customer name is required")
     @Pattern(regexp = "^[A-Za-z ]+$", message = "Customer name must contain only letters and spaces")
@@ -25,7 +18,6 @@ public class OrdersDTO {
 
     @JsonFormat(shape =  JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @NotNull(message = "Order Date is required")
-    @PastOrPresent(message = "Order date cannot be in the future")
     private Date orderDate;
 
     @NotBlank(message = "Delivery type is required")

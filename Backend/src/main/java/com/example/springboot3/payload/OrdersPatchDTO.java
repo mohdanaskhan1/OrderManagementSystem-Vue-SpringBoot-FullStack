@@ -1,11 +1,10 @@
-package com.example.springboot3.dto;
+package com.example.springboot3.payload;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.sql.Time;
-import java.time.LocalTime;
 
 @Data
 public class OrdersPatchDTO {
