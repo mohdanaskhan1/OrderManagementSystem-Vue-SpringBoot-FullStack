@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -27,8 +29,7 @@ public class Orders {
 
     @Column(name = "order_date", nullable = false)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @Temporal(TemporalType.DATE)
-    private Date orderDate;
+    private LocalDate orderDate;
 
     @Column(name = "delivery_type", length = 50, nullable = false)
     private String deliveryType;
@@ -40,7 +41,6 @@ public class Orders {
     private BigDecimal totalAmount;
 
     @Column(name = "delivery_time" , nullable = true)
-    @DateTimeFormat(pattern = "HH:MM:SS")
-    @Temporal(TemporalType.TIME)
-    private Time deliveryTime;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime deliveryTime;
 }
