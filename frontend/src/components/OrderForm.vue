@@ -19,7 +19,7 @@ const orderDateRules = [
     const selectedDate = new Date(v);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return selectedDate <= today || "Order date cannot be in the future";
+    return selectedDate >= today || "Order date cannot be in the past";
   }
 ];
 
@@ -68,13 +68,12 @@ async function submitOrder() {
     await orderServices.create(newOrder);
     alert("Order created successfully!");
 
-    // reset form
-    form.customerName = "";
-    form.orderDate = "";
-    form.deliveryType = "";
-    form.status = "";
-    form.totalAmount = "";
-    form.deliveryTime = "";
+    form.customerName = null;
+    form.orderDate = null;
+    form.deliveryType = null;
+    form.status = null;
+    form.totalAmount = null;
+    form.deliveryTime = null;
 
     emit("order-created");
   } catch (err) {

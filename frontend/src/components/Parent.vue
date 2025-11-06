@@ -1,10 +1,11 @@
 <script setup lang="ts">
-
+import {onMounted, ref} from "vue";
 import Child from "@/components/Child.vue";
 import OrderForm from "@/components/OrderForm.vue";
 import orderServices from "@/services/orderServices";
-import {onMounted, ref} from "vue";
 import OrderSearch from "@/components/OrderSearch.vue";
+import OrderUpdate from "@/components/OrderUpdate.vue";
+
 
 const orders = ref([]);
 
@@ -31,11 +32,11 @@ onMounted(() => {
 <template>
   <v-container class="mt-6">
 
-    <vCard elevation="3" class="pa-4">
+    <v-card elevation="3" class="pa-4">
       <v-card-title class="text-h6 text-center">
         📦 Order Management System
       </v-card-title>
-    </vCard>
+    </v-card>
 
 
     <OrderForm @order-created="fetchOrders"/>
@@ -47,6 +48,8 @@ onMounted(() => {
         :orders="orders"
         @delete-order="deleteOrder"
     />
+
+
   </v-container>
 
   <v-container>
@@ -54,15 +57,10 @@ onMounted(() => {
   </v-container>
 
   <v-container>
-    <v-card outlined class="pa-4">
-      <v-card-title>Update Order</v-card-title>
-      <v-text-field
-          label="Enter Order ID to update"
-          type="number"
-      />
-
-    </v-card>
+    <OrderUpdate @order-updated="fetchOrders"/>
   </v-container>
+
+
 </template>
 
 <style scoped>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import orderServices from "@/services/orderServices";
+import OrderUpdate from "@/components/OrderUpdate.vue";
 
 const id = ref('')
 const order = ref(null)
@@ -39,7 +40,7 @@ async function getOrderById() {
       <v-btn color="primary" type="submit">Search</v-btn>
     </v-form>
 
-    <v-alert v-if="errorMsg" type="error" class="mt-3">{{ errorMsg }}</v-alert>
+    <v-alert v-if="errorMsg" type="error" class="mt-3" @click:close="errorMsg = ''">{{ errorMsg }}</v-alert>
 
     <div v-if="order" class="mt-3">
       <p><strong>ID:</strong> {{ order.id }}</p>

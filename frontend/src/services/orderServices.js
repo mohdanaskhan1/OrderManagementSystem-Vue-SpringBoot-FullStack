@@ -12,7 +12,7 @@ export default {
     create(order) {
         return axios.post(API_URL, order);
     },
-    updatePatch(id, order) {
+    updateOrder(id, order) {
         return axios.patch(API_URL + id, order);
     },
     delete(id) {

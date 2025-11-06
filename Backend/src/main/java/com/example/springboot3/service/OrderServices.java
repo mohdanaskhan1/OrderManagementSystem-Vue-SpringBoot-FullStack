@@ -1,8 +1,8 @@
 package com.example.springboot3.service;
 
 
-import com.example.springboot3.dto.OrdersDTO;
-import com.example.springboot3.dto.OrdersPatchDTO;
+import com.example.springboot3.payload.OrdersDTO;
+import com.example.springboot3.payload.OrdersPatchDTO;
 import com.example.springboot3.entity.Orders;
 import java.util.List;
 
