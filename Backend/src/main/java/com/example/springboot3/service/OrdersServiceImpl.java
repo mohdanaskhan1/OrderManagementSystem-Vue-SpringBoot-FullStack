@@ -1,25 +1,24 @@
 package com.example.springboot3.service;
 
+import com.example.springboot3.entity.Orders;
 import com.example.springboot3.exception.InvalidOrderOperationException;
 import com.example.springboot3.exception.ResourceNotFoundException;
 import com.example.springboot3.payload.OrdersDTO;
 import com.example.springboot3.payload.OrdersDeliveryUpdateDTO;
 import com.example.springboot3.payload.OrdersPatchDTO;
-import com.example.springboot3.entity.Orders;
 import com.example.springboot3.payload.OrdersResponse;
 import com.example.springboot3.repository.OrdersRepo;
+import com.example.springboot3.utils.DeliveryType;
+import com.example.springboot3.utils.Status;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,53 +65,39 @@ public class OrdersServiceImpl implements OrderService {
     }
 
     @Override
-    public OrdersDTO createOrders(OrdersDTO  ordersDTO) {
+    public OrdersDTO createOrders(OrdersDTO ordersDTO) {
         Orders orders = mapToEntity(ordersDTO);
         return mapToDTO(ordersRepo.save(orders));
     }
 
-    public void deleteOrder(Long id){
+    public void deleteOrder(Long id) {
         Orders orders = ordersRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
         ordersRepo.delete(orders);
     }
 
-    public OrdersPatchDTO updatePatchOrder(Long id, OrdersPatchDTO  ordersPatchDTO) {
+    public OrdersPatchDTO updatePatchOrder(Long id, OrdersPatchDTO ordersPatchDTO) {
         Orders order = ordersRepo.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Order", "id", id));
-        if (ordersPatchDTO.getDeliveryTime()!=null){
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        if (ordersPatchDTO.getDeliveryTime() != null) {
             order.setDeliveryTime(ordersPatchDTO.getDeliveryTime());
         }
-        if (ordersPatchDTO.getDeliveryType()!=null){
+        if (ordersPatchDTO.getDeliveryType() != null) {
             order.setDeliveryType(ordersPatchDTO.getDeliveryType());
         }
-        if (ordersPatchDTO.getStatus()!=null){
+        if (ordersPatchDTO.getStatus() != null) {
             order.setStatus(ordersPatchDTO.getStatus());
         }
         return mapToPatchDTO(ordersRepo.save(order));
     }
 
     @Override
-    public OrdersResponse findFilteredOrders(String status, LocalDate fromDate, LocalDate toDate, BigDecimal minAmount, Boolean includeStats, Integer page, Integer size, String sortBy, String sortDir) {
+    public OrdersResponse findFilteredOrders(Status status, LocalDate fromDate, LocalDate toDate, BigDecimal minAmount, Boolean includeStats, Pageable pageable) {
 
         if (fromDate == null) fromDate = LocalDate.now().minusDays(defaultDays);
         if (toDate == null) toDate = LocalDate.now();
-        if (size == null) size = defaultPageSize;
-        if (page == null) page = 0;
-
-        Sort sort = sortDir.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() :
-                Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Orders> ordersPage = ordersRepo.findOrdersFiltered(status, minAmount, fromDate, toDate, pageable);
-        List<OrdersDTO> listOfDTO = ordersPage.getContent().stream().map(this::mapToDTO).toList();
-        OrdersResponse ordersResponse = new OrdersResponse();
-        ordersResponse.setContent(listOfDTO);
-        ordersResponse.setPageNo(ordersPage.getNumber());
-        ordersResponse.setPageSize(ordersPage.getSize());
-        ordersResponse.setTotalPages(ordersPage.getTotalPages());
-        ordersResponse.setTotalElements(ordersPage.getTotalElements());
-        ordersResponse.setLast(ordersPage.isLast());
+        OrdersResponse ordersResponse = mapToOrdersResponse(ordersPage);
 
         if (Boolean.TRUE.equals(includeStats)) {
             List<Object[]> statsList = ordersRepo.findOrdersAggregated(status, minAmount, fromDate, toDate);
@@ -129,7 +114,6 @@ public class OrdersServiceImpl implements OrderService {
                 );
             }
         }
-
         return ordersResponse;
     }
 
@@ -137,28 +121,33 @@ public class OrdersServiceImpl implements OrderService {
     public OrdersDTO updateDeliveryRules(Long id, OrdersDeliveryUpdateDTO ordersDeliveryUpdateDTO) {
         Orders order = ordersRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
-        if ("Shipped".equalsIgnoreCase(order.getStatus()) ||
-                "Delivered".equalsIgnoreCase(order.getStatus())) {
+        if (Status.SHIPPED.equals(order.getStatus()) ||
+                Status.DELIVERED.equals(order.getStatus())) {
             throw new InvalidOrderOperationException("Delivery details cannot be updated for shipped or delivered orders.");
         }
-        LocalDateTime orderDateTime = order.getDeliveryTime();
-        LocalDateTime now = LocalDateTime.now();
-        long hoursPassed = java.time.Duration.between(orderDateTime, now).toHours();
-        if (hoursPassed >= cutoffHours) {
-            throw new InvalidOrderOperationException(
-                    "Delivery details cannot be updated after " + cutoffHours + " hours of order creation."
-            );
-        }
-        if ("Express".equalsIgnoreCase(ordersDeliveryUpdateDTO.getDeliveryType())) {
+        if (DeliveryType.EXPRESS.equals(ordersDeliveryUpdateDTO.getDeliveryType())) {
             if (order.getTotalAmount().compareTo(expressMinAmount) < 0) {
                 throw new InvalidOrderOperationException(
                         "Express delivery requires a minimum order amount of " + expressMinAmount
                 );
             }
         }
+        LocalDateTime currentDeliveryTime = order.getDeliveryTime();
+        System.out.println(currentDeliveryTime);
+        if (currentDeliveryTime == null) {
+            throw new InvalidOrderOperationException("Delivery time is not set. Cannot validate cutoff.");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(now);
+        long hoursPassed = Duration.between(currentDeliveryTime, now).toHours();
+        System.out.println(hoursPassed);
+        if (hoursPassed <= cutoffHours) {
+            throw new InvalidOrderOperationException(
+                    "Delivery details cannot be updated before " + cutoffHours + " hours from the delivery time."
+            );
+        }
         if (ordersDeliveryUpdateDTO.getDeliveryType() != null)
             order.setDeliveryType(ordersDeliveryUpdateDTO.getDeliveryType());
-
         if (ordersDeliveryUpdateDTO.getDeliveryTime() != null) {
             order.setDeliveryTime(ordersDeliveryUpdateDTO.getDeliveryTime());
         }
@@ -166,16 +155,27 @@ public class OrdersServiceImpl implements OrderService {
     }
 
 
-    private OrdersDTO mapToDTO(Orders order){
-        return modelMapper.map(order,OrdersDTO.class);
+    private OrdersDTO mapToDTO(Orders order) {
+        return modelMapper.map(order, OrdersDTO.class);
     }
 
-    private OrdersPatchDTO mapToPatchDTO(Orders order){
-        return modelMapper.map(order,OrdersPatchDTO.class);
+    private OrdersPatchDTO mapToPatchDTO(Orders order) {
+        return modelMapper.map(order, OrdersPatchDTO.class);
     }
 
-    private Orders mapToEntity(OrdersDTO ordersDTO){
-        return modelMapper.map(ordersDTO,Orders.class);
+    private OrdersResponse mapToOrdersResponse(Page<Orders> ordersPage) {
+
+        OrdersResponse response = modelMapper.map(ordersPage, OrdersResponse.class);
+        List<OrdersDTO> dtoList = ordersPage.getContent()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+        response.setContent(dtoList);
+        return response;
+    }
+
+    private Orders mapToEntity(OrdersDTO ordersDTO) {
+        return modelMapper.map(ordersDTO, Orders.class);
     }
 
 

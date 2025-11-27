@@ -5,8 +5,13 @@ import com.example.springboot3.payload.OrdersDeliveryUpdateDTO;
 import com.example.springboot3.payload.OrdersPatchDTO;
 import com.example.springboot3.payload.OrdersResponse;
 import com.example.springboot3.service.OrderService;
+import com.example.springboot3.utils.Status;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,17 +86,15 @@ public class OrdersController {
     )
     @GetMapping
     public ResponseEntity<OrdersResponse> findFilteredOrders(
-            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "status", required = false) Status status,
             @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(value = "toDate", required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             @RequestParam(value = "minAmount", required = false) BigDecimal minAmount,
             @RequestParam(required = false) Boolean includeStats,
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "sortBy", defaultValue = "orderDate", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir
-            ){
-        return ResponseEntity.ok(orderService.findFilteredOrders(status, fromDate, toDate, minAmount, includeStats, page, size, sortBy, sortDir ));
+            @ParameterObject @PageableDefault(size = 20, sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(orderService.findFilteredOrders(status, fromDate, toDate, minAmount, includeStats, pageable));
+
     }
 
     @Operation(
@@ -100,7 +103,7 @@ public class OrdersController {
     )
     @PatchMapping("/{id}/delivery")
     public ResponseEntity<OrdersDTO> updateDeliveryRules(@PathVariable Long id,
-                                                                       @Valid @RequestBody OrdersDeliveryUpdateDTO ordersDeliveryUpdateDTO){
+                                                         @Valid @RequestBody OrdersDeliveryUpdateDTO ordersDeliveryUpdateDTO) {
         return ResponseEntity.ok(orderService.updateDeliveryRules(id, ordersDeliveryUpdateDTO));
     }
 
