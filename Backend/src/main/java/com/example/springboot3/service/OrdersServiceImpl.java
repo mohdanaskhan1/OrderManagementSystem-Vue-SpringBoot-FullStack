@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrdersServiceImpl implements OrderService {
@@ -96,6 +98,15 @@ public class OrdersServiceImpl implements OrderService {
 
         if (fromDate == null) fromDate = LocalDate.now().minusDays(defaultDays);
         if (toDate == null) toDate = LocalDate.now();
+
+        if (pageable.getPageSize() == 10 || pageable.getPageSize() == 0) {
+            pageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    defaultPageSize,
+                    pageable.getSort()
+            );
+        }
+
         Page<Orders> ordersPage = ordersRepo.findOrdersFiltered(status, minAmount, fromDate, toDate, pageable);
         OrdersResponse ordersResponse = mapToOrdersResponse(ordersPage);
 
@@ -153,6 +164,8 @@ public class OrdersServiceImpl implements OrderService {
         }
         return mapToDTO(ordersRepo.save(order));
     }
+
+
 
 
     private OrdersDTO mapToDTO(Orders order) {

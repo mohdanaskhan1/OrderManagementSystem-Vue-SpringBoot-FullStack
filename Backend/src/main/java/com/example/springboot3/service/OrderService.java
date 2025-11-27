@@ -32,4 +32,6 @@ public interface OrderService {
     );
 
     OrdersDTO updateDeliveryRules(Long id, OrdersDeliveryUpdateDTO ordersDeliveryUpdateDTO);
+
+
 }

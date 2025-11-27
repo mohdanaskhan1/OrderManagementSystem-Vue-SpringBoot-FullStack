@@ -91,7 +91,7 @@ public class OrdersController {
             @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             @RequestParam(value = "minAmount", required = false) BigDecimal minAmount,
             @RequestParam(required = false) Boolean includeStats,
-            @ParameterObject @PageableDefault(size = 20, sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable
+            @ParameterObject @PageableDefault(sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(orderService.findFilteredOrders(status, fromDate, toDate, minAmount, includeStats, pageable));
 
