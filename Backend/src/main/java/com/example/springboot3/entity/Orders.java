@@ -46,7 +46,7 @@ public class Orders {
     @Column(name = "total_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalAmount;
 
-    @Column(name = "delivery_time", nullable = true)
+    @Column(name = "delivery_time")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime deliveryTime;
 }

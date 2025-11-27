@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OrdersServiceImpl implements OrderService {
@@ -113,7 +112,7 @@ public class OrdersServiceImpl implements OrderService {
         if (Boolean.TRUE.equals(includeStats)) {
             List<Object[]> statsList = ordersRepo.findOrdersAggregated(status, minAmount, fromDate, toDate);
             if (!statsList.isEmpty()) {
-                Object[] stats = statsList.get(0);
+                Object[] stats = statsList.getFirst();
                 ordersResponse.setTotalOrders(
                         stats[0] != null ? ((Number) stats[0]).longValue() : 0L
                 );

@@ -18,13 +18,14 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     // WHEN ANY VALIDATION FAILS.
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, WebRequest request) {
+    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         HashMap<String, Object> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -114,7 +115,7 @@ public class GlobalExceptionHandler {
     // Handle type mismatches (e.g., passing string instead of number)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorDetails> handleTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
-        String message = "Parameter '" + ex.getName() + "' should be of type " + ex.getRequiredType().getSimpleName();
+        String message = "Parameter '" + ex.getName() + "' should be of type " + Objects.requireNonNull(ex.getRequiredType()).getSimpleName();
         ErrorDetails errorDetails = new ErrorDetails(new Date(), message, request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
