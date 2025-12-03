@@ -24,16 +24,16 @@ const statusRules = [
 
 const deliveryTimeRules = [
   (v: string) => !!v || "Delivery Time is required",
-  (v: string) =>
-      /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(v) ||
-      "Delivery Time must be in HH:MM:SS format",
+  (v) =>
+  /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(v) 
+  || "Date & Time must be in YYYY-MM-DDTHH:MM:SS format"
 ];
 
 async function getOrderId() {
   if (!orderId.value) return;
   try {
     const response = await orderServices.getById(orderId.value);
-    const data = response.data.data;
+    const data = response.data;
     fetchedOrder.value = data;
     orderData.deliveryType = data.deliveryType || "";
     orderData.status = data.status || "";
@@ -79,9 +79,11 @@ async function updateOrder() {
 
       <v-card v-if="isFound" class="mt-3 pa-3">
         <p><strong>Order Found</strong></p>
-        <p v-if="fetchedOrder?.customerName">
-          Customer: {{ fetchedOrder.customerName }}
-        </p>
+        <div v-if="fetchedOrder?.customerName">
+          <p><strong>Customer:</strong> {{ fetchedOrder.customerName }}</p>
+          <p><strong>Order Date:</strong> {{ fetchedOrder.orderDate }}</p>
+          <p><strong>Total Amount:</strong> {{ fetchedOrder.totalAmount }}</p>
+        </div>
       </v-card>
     </v-form>
 
@@ -104,7 +106,7 @@ async function updateOrder() {
       />
       <v-text-field
           label="Delivery Time"
-          placeholder="HH:MM:SS"
+          placeholder="YYYY-MM-DDTHH:MM:SS"
           v-model="orderData.deliveryTime"
           :rules="deliveryTimeRules"
       />

@@ -27,7 +27,7 @@ const headers = [
         :items="orders"
         class="elevation-1"
     >
-      <template v-slot:[`item.actions`]="{ item }: any">
+      <template v-slot:[`item.actions`]="{ item }">
         <v-btn
             icon
             color="red"

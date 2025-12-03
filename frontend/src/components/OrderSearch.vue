@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import orderServices from "@/services/orderServices";
-import OrderUpdate from "@/components/OrderUpdate.vue";
 
 const id = ref('')
 const order = ref(null)
@@ -14,7 +13,7 @@ async function getOrderById() {
   }
   try {
     const response = await orderServices.getById(id.value);
-    order.value = response.data.data
+    order.value = response.data
     errorMsg.value = ''
     console.log("Data fetched:", order.value)
   } catch (error) {

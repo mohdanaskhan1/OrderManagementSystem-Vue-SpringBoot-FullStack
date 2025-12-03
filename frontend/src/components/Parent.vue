@@ -11,7 +11,7 @@ const orders = ref([]);
 
 async function fetchOrders() {
   const res = await orderServices.getAll()
-  orders.value = res.data.data;
+  orders.value = res.data;
   console.log(orders.value)
 }
 
