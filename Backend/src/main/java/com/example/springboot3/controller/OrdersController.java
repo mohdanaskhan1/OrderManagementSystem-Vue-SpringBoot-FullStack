@@ -15,13 +15,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-
+@Validated
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/orders")
 @RestController
@@ -38,7 +39,7 @@ public class OrdersController {
             description = "Retrieve a list of all Orders"
     )
     @GetMapping("/fetch")
-    public ResponseEntity<List<OrdersDTO>> FetchAllOrders() {
+    public ResponseEntity<List<OrdersDTO>> fetchAllOrders() {
         return ResponseEntity.ok(orderService.findAll());
     }
 
@@ -94,7 +95,6 @@ public class OrdersController {
             @ParameterObject @PageableDefault(sort = "orderDate", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(orderService.findFilteredOrders(status, fromDate, toDate, minAmount, includeStats, pageable));
-
     }
 
     @Operation(
@@ -105,6 +105,17 @@ public class OrdersController {
     public ResponseEntity<OrdersDTO> updateDeliveryRules(@PathVariable Long id,
                                                          @Valid @RequestBody OrdersDeliveryUpdateDTO ordersDeliveryUpdateDTO) {
         return ResponseEntity.ok(orderService.updateDeliveryRules(id, ordersDeliveryUpdateDTO));
+    }
+
+
+    @Operation(
+            summary = "Create multiple orders at once",
+            description = "Accepts a list of orders and saves all of them in bulk"
+    )
+    @PostMapping("/bulk")
+    public ResponseEntity<List<OrdersDTO>> createBulkOrders(
+            @Valid @RequestBody List<OrdersDTO> ordersDTOList) {
+        return new ResponseEntity<>(orderService.createBulkOrders(ordersDTOList), HttpStatus.CREATED);
     }
 
 }

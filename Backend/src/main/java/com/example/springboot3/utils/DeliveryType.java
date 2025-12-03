@@ -10,7 +10,10 @@ public enum DeliveryType {
 
     @JsonCreator
     public static DeliveryType from(String value) {
-        return DeliveryType.valueOf(value.toUpperCase().replace(" ", "_"));
+        try {
+            return DeliveryType.valueOf(value.toUpperCase().replace(" ", "_"));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid Delivery Type value: " + value);
+        }
     }
-
 }

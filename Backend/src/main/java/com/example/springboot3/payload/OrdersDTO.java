@@ -23,12 +23,10 @@ public class OrdersDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate orderDate;
 
-    @NotBlank(message = "Delivery type is required")
-    @Size(max = 50, message = "Delivery type must be less than 50 characters")
+    @NotNull(message = "Delivery type is required")
     private DeliveryType deliveryType;
 
-    @NotBlank(message = "Status is required")
-    @Size(max = 20, message = "Status must be less than 20 characters")
+    @NotNull(message = "Status is required")
     private Status status;
 
     @NotNull(message = "Total amount is required")

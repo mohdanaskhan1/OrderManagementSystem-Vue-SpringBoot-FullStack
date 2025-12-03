@@ -10,7 +10,7 @@ public enum Status {
     SHIPPED;
 
     @JsonCreator
-    public static Status fromString(String value){
+    public static Status fromString(String value) {
         return Status.valueOf(value.toUpperCase());
     }
 }

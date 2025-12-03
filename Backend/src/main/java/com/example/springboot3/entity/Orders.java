@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "orders" , uniqueConstraints = {
+@Table(name = "orders", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"customer_name", "order_date"})
 })
 public class Orders {

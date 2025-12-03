@@ -164,7 +164,12 @@ public class OrdersServiceImpl implements OrderService {
         return mapToDTO(ordersRepo.save(order));
     }
 
-
+    @Override
+    public List<OrdersDTO> createBulkOrders(List<OrdersDTO> ordersDTOList) {
+        List<Orders> ordersEntities = ordersDTOList.stream().map(this::mapToEntity).toList();
+        List<Orders> ordersList = ordersRepo.saveAll(ordersEntities);
+        return ordersList.stream().map(this::mapToDTO).toList();
+    }
 
 
     private OrdersDTO mapToDTO(Orders order) {

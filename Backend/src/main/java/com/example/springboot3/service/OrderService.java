@@ -33,5 +33,5 @@ public interface OrderService {
 
     OrdersDTO updateDeliveryRules(Long id, OrdersDeliveryUpdateDTO ordersDeliveryUpdateDTO);
 
-
+    List<OrdersDTO> createBulkOrders(List<OrdersDTO> ordersDTOList);
 }

@@ -1,6 +1,7 @@
 package com.example.springboot3.exception;
 
 import com.example.springboot3.payload.ErrorDetails;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
@@ -27,7 +29,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         HashMap<String, Object> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
+        ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
@@ -58,20 +60,9 @@ public class GlobalExceptionHandler {
     }
 
 
-    //    FOR WHEN WE SEND MALFORMED JSON
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorDetails> handleInvalidJson(HttpMessageNotReadableException ex, WebRequest request) {
-        String message = "Malformed JSON request";
-        if (ex.getCause() != null) {
-            message += ": " + ex.getCause().getMessage();
-        }
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), message, request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
-    }
-
     //WHEN WRONG URL IS VISITED
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<Object> handleNotFoundUrl(NoHandlerFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorDetails> handleNotFoundUrl(NoHandlerFoundException ex, HttpServletRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(new Date(), "No handler found for URL: " + ex.getRequestURL(), request.getRequestURI());
 
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
@@ -120,10 +111,30 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorDetails> handleValidationException(HttpMessageNotReadableException exception, WebRequest request) {
+        String message = "Malformed JSON request";
+        if (exception.getCause() instanceof InvalidFormatException ifx) {
+            if (ifx.getTargetType() != null && ifx.getTargetType().isEnum()) {
+                String fieldName = ifx.getPath().get(ifx.getPath().size() - 1).getFieldName();
+                message = String.format(
+                        "Invalid enum value: '%s' for field '%s'. Allowed values are: %s.",
+                        ifx.getValue(),
+                        fieldName,
+                        Arrays.toString(ifx.getTargetType().getEnumConstants())
+                );
+            }
+        }
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), message, request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+
     // FOR ANY OTHER KIND OF EXCEPTION
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex, WebRequest webRequest) {
         ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), webRequest.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+
     }
 }
